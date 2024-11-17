@@ -1,1 +1,172 @@
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+local Window = Rayfield:CreateWindow({
+   Name = "Universal Obby Script by 4520e_er",
+   LoadingTitle = "Universal Obby Script",
+   LoadingSubtitle = "by 4520e_er on roblox",
+   ConfigurationSaving = {
+      Enabled = false,
+      FolderName = nil, -- Create a custom folder for your hub/game
+      FileName = "Example Hub"
+   },
+   Discord = {
+      Enabled = false,
+      Invite = "noinvitelink", -- The Discord invite code, do not include discord.gg/. E.g. discord.gg/ABCD would be ABCD
+      RememberJoins = true -- Set this to false to make them join the discord every time they load it up
+   },
+   KeySystem = false, -- Set this to true to use our key system
+   KeySettings = {
+      Title = "Key | Youtube Hub",
+      Subtitle = "Key System",
+      Note = "Key In Discord Server",
+      FileName = "YoutubeHubKey1", -- It is recommended to use something unique as other scripts using Rayfield may overwrite your key file
+      SaveKey = false, -- The user's key will be saved, but if you change the key, they will be unable to use your script
+      GrabKeyFromSite = true, -- If this is true, set Key below to the RAW site you would like Rayfield to get the key from
+      Key = {"https://pastebin.com/raw/AtgzSPWK"} -- List of keys that will be accepted by the system, can be RAW file links (pastebin, github etc) or simple strings ("hello","key22")
+   }
+})
+
+local MainTab = Window:CreateTab("🏠 Home", nil) -- Title, Image
+local MainSection = MainTab:CreateSection("Main")
+
+Rayfield:Notify({
+   Title = "You executed the script",
+   Content = "Very cool gui",
+   Duration = 5,
+   Image = 13047715178,
+   Actions = { -- Notification Buttons
+      Ignore = {
+         Name = "Okay!",
+         Callback = function()
+         print("The user tapped Okay!")
+      end
+   },
+},
+})
+
+local Button = MainTab:CreateButton({
+   Name = "Infinite Jump Toggle",
+   Callback = function()
+       -- Toggle the infinite jump on/off
+       _G.infiniteJump = not _G.infiniteJump
+
+       if _G.infiniteJumpStarted == nil then
+           -- Ensures the jump logic only runs once to save resources
+           _G.infiniteJumpStarted = true
+
+           -- Notify the player about the status of infinite jump
+           game.StarterGui:SetCore("SendNotification", {
+               Title = "Infinite Jump",
+               Text = _G.infiniteJump and "Activated! You can now jump infinitely." or "Deactivated.",
+               Duration = 5
+           })
+
+           -- Set up infinite jump functionality
+           local player = game:GetService("Players").LocalPlayer
+           local humanoid = player.Character:WaitForChild("Humanoid")
+           local humanoidRootPart = player.Character:WaitForChild("HumanoidRootPart")
+           
+           -- Listen for the spacebar press to trigger jump
+           game:GetService('UserInputService').InputBegan:Connect(function(input, gameProcessed)
+               -- Ensure it's not processed by other game controls
+               if gameProcessed then return end
+
+               -- Only trigger when spacebar is pressed and infinite jump is active
+               if input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode == Enum.KeyCode.Space then
+                   if _G.infiniteJump then
+                       -- Trigger jump by changing the humanoid state to "Jumping"
+                       humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+                       humanoid:Move(Vector3.new(0, 0, 0)) -- Prevent the character from falling
+                       humanoid:ChangeState(Enum.HumanoidStateType.Seated) -- Reset state to prevent unwanted behavior
+                   end
+               end
+           end)
+       end
+   end,
+})
+
+local Slider = MainTab:CreateSlider({
+   Name = "WalkSpeed Slider",
+   Range = {1, 350},
+   Increment = 1,
+   Suffix = "Speed",
+   CurrentValue = 16,
+   Flag = "sliderws", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+   Callback = function(Value)
+        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = (Value)
+   end,
+})
+
+local Slider = MainTab:CreateSlider({
+   Name = "JumpPower Slider",
+   Range = {1, 350},
+   Increment = 1,
+   Suffix = "Speed",
+   CurrentValue = 16,
+   Flag = "sliderjp", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+   Callback = function(Value)
+        game.Players.LocalPlayer.Character.Humanoid.JumpPower = (Value)
+   end,
+})
+
+local Dropdown = MainTab:CreateDropdown({
+   Name = "Select Area",
+   Options = {"Starter World","Pirate Island","Pineapple Paradise"},
+   CurrentOption = {"Starter World"},
+   MultipleOptions = false,
+   Flag = "dropdownarea", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+   Callback = function(Option)
+        print(Option)
+   end,
+})
+
+local Button = MainTab:CreateButton({
+   Name = "Walk on Air Toggle",
+   Callback = function()
+       -- Toggles walk on air between on or off
+       _G.walkOnAir = not _G.walkOnAir
+
+       if _G.walkOnAirStarted == nil then
+           -- Ensures this only runs once to save resources
+           _G.walkOnAirStarted = true
+
+           -- Notify the player if it's activated or deactivated
+           game.StarterGui:SetCore("SendNotification", {
+               Title = "Walk on Air",
+               Text = _G.walkOnAir and "Activated! You can now walk on air." or "Deactivated.",
+               Duration = 5
+           })
+
+           -- Set up Walk on Air functionality
+           local plr = game:GetService('Players').LocalPlayer
+           local humanoid = plr.Character:WaitForChild("Humanoid")
+           local humanoidRootPart = plr.Character:WaitForChild("HumanoidRootPart")
+           
+           -- Disable gravity and allow the player to float
+           humanoid.PlatformStand = true
+           humanoidRootPart.Anchored = false  -- Allow movement
+
+           -- Create a BodyVelocity to control the character's movement in the air
+           local bodyVelocity = Instance.new("BodyVelocity")
+           bodyVelocity.MaxForce = Vector3.new(400000, 400000, 400000)
+           bodyVelocity.Velocity = Vector3.new(0, 0, 0)
+           bodyVelocity.Parent = humanoidRootPart
+
+           -- Keep the player floating by overriding gravity
+           game:GetService("RunService").Heartbeat:Connect(function()
+               if _G.walkOnAir then
+                   -- Prevent falling by resetting the Y-velocity to zero
+                   humanoidRootPart.Velocity = Vector3.new(humanoidRootPart.Velocity.X, 0, humanoidRootPart.Velocity.Z) 
+                   
+                   -- Control player movement while in the air (forward, backward, left, right)
+                   local moveDirection = Vector3.new(0, 0, 0)
+                   if humanoid.MoveDirection.Magnitude > 0 then
+                       moveDirection = humanoid.MoveDirection.Unit * 16  -- Walking speed in air (adjust speed here)
+                   end
+                   bodyVelocity.Velocity = Vector3.new(moveDirection.X, bodyVelocity.Velocity.Y, moveDirection.Z)
+               end
+           end)
+       end
+   end,
+})
 
